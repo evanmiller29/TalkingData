@@ -37,13 +37,13 @@ else:
     df = pd.read_csv(file, parse_dates=['click_time'], dtype=dtypes, usecols=cols)
 
 rows = df.shape[0]
-iters = 50
+iters = 100
 iter_rows = ceil(rows/iters)
 
 X_ttl = np.empty((0, 31))
 y_ttl = np.empty((0, ))
 
-for i in list(range(0, 50)):
+for i in list(range(0, iters)):
 
     print("Cut # %i" % (i))
 
@@ -74,8 +74,8 @@ for i in list(range(0, 50)):
     predictors.append('second')
 
     gc.collect()
-    predictors, df = funcs.do_next_prev_Click(predictors, df, agg_suffix='nextClick', agg_type='float32');
-    predictors, df = funcs.do_next_prev_Click(predictors, df,agg_suffix='prevClick', agg_type='float32'  )
+    predictors, df = funcs.do_next_prev_Click(predictors, df, agg_suffix='nextClick', agg_type='float32')
+    predictors, df = funcs.do_next_prev_Click(predictors, df,agg_suffix='prevClick', agg_type='float32')
 
     print("Calculating unique counts")
 
@@ -140,12 +140,21 @@ for i in list(range(0, 50)):
     X_ttl = np.vstack((X_ttl, X))
     y_ttl = np.concatenate((y_ttl, y))
 
-print("Outputting the sparse matrix for %s data" % (run))
+    if (i + 1) % 10 == 0:
 
-if run == "train":
+        if run == "train":
 
-    funcs.from_sparse_to_file("train.sparse", X_ttl, deli1=" ", deli2=":", ytarget=y_ttl)
+            file = "train_" + str(i+1) + ".sparse"
+            funcs.from_sparse_to_file(file, X_ttl, deli1=" ", deli2=":", ytarget=y_ttl)
 
-else:
+            X_ttl = np.empty((0, 31))
+            y_ttl = np.empty((0,))
 
-    funcs.from_sparse_to_file("test.sparse", X_ttl, deli1=" ", deli2=":", ytarget=None)
+        else:
+
+            file = "test_" + str(i + 1) + ".sparse"
+            funcs.from_sparse_to_file("test.sparse", X_ttl, deli1=" ", deli2=":", ytarget=None)
+
+            X_ttl = np.empty((0, 31))
+
+
