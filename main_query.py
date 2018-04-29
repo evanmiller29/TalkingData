@@ -5,6 +5,8 @@ from math import ceil
 import numpy as np
 
 folder = "F:/Nerdy Stuff/Kaggle/Talking data/data/"
+sparse_array_path = 'F:/Nerdy Stuff/Kaggle/Talking data/sparse matricies/'
+
 predictors = []
 
 run = "train"
@@ -25,7 +27,7 @@ if run == "train":
     cols = ['ip', 'app', 'device', 'os', 'channel', 'click_time', 'is_attributed']
 
     print('loading %s data...' % (run))
-    df = pd.read_csv(file, parse_dates=['click_time'], low_memory=True,dtype=dtypes, usecols=cols)
+    base_df = pd.read_csv(file, parse_dates=['click_time'], low_memory=True,dtype=dtypes, usecols=cols)
 
 else:
 
@@ -34,16 +36,18 @@ else:
     file = folder + "test.csv"
     cols = ['ip', 'app', 'device', 'os', 'channel', 'click_time']
 
-    df = pd.read_csv(file, parse_dates=['click_time'], dtype=dtypes, usecols=cols)
+    base_df = pd.read_csv(file, parse_dates=['click_time'], dtype=dtypes, usecols=cols)
 
-rows = df.shape[0]
+rows = base_df.shape[0]
 iters = 100
 iter_rows = ceil(rows/iters)
 
 X_ttl = np.empty((0, 31))
 y_ttl = np.empty((0, ))
 
-for i in list(range(0, iters)):
+start_point = 20
+
+for i in list(range(start_point, iters)):
 
     print("Cut # %i" % (i))
 
@@ -53,17 +57,15 @@ for i in list(range(0, iters)):
         end = (i + 1) * iter_rows
 
         print("start row = %s and end row = %s" % (start, end))
-        df = df.loc[start:end, :]
+        df = base_df.iloc[start:end, :].copy()
 
     else:
-
-        df = pd.read_csv(file, parse_dates=['click_time'], dtype=dtypes, usecols=cols)
 
         start = i * iter_rows + 1
         end = (i + 1) * iter_rows
 
         print("start row = %s and end row = %s" % (start, end))
-        df = df.loc[start:end, :]
+        df = base_df.iloc[start:end, :].copy()
 
     df['hour'] = pd.to_datetime(df.click_time).dt.hour.astype('int8')
     df['day'] = pd.to_datetime(df.click_time).dt.day.astype('int8')
@@ -131,29 +133,27 @@ for i in list(range(0, iters)):
     gc.collect()
 
     X = df.drop(["is_attributed", "click_time"], axis=1).as_matrix()
-
-    print(X.shape)
-
-    if run == "train":
-        y = df['is_attributed'].values
-
-    X_ttl = np.vstack((X_ttl, X))
-    y_ttl = np.concatenate((y_ttl, y))
-
-    if (i + 1) % 10 == 0:
-
-        if run == "train":
-
-            file = "train_" + str(i+1) + ".sparse"
-            funcs.from_sparse_to_file(file, X_ttl, deli1=" ", deli2=":", ytarget=y_ttl)
-
             X_ttl = np.empty((0, 31))
             y_ttl = np.empty((0,))
 
+        print(X.shape)
+
+        if run == "train":
+            y = df['is_attributed'].values
+
+        X_ttl = np.vstack((X_ttl, X))
+        y_ttl = np.concatenate((y_ttl, y))
+
+        if (i + 1) % 10 == 0:
+
+            if run == "train":
+                file = sparse_array_path + "train_" + str(i + 1) + ".sparse"
+                funcs.from_sparse_to_file(file, X_ttl, deli1=" ", deli2=":", ytarget=y_ttl)
+
         else:
 
-            file = "test_" + str(i + 1) + ".sparse"
-            funcs.from_sparse_to_file("test.sparse", X_ttl, deli1=" ", deli2=":", ytarget=None)
+            file = sparse_array_path + "test_" + str(i + 1) + ".sparse"
+            funcs.from_sparse_to_file(file, X_ttl, deli1=" ", deli2=":", ytarget=None)
 
             X_ttl = np.empty((0, 31))
 
