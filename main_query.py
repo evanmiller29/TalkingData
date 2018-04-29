@@ -3,6 +3,7 @@ import gc
 import stacknet_funcs as funcs
 from math import ceil
 import numpy as np
+from os import chdir
 
 folder = "F:/Nerdy Stuff/Kaggle/Talking data/data/"
 sparse_array_path = 'F:/Nerdy Stuff/Kaggle/Talking data/sparse matricies/'
@@ -45,7 +46,7 @@ iter_rows = ceil(rows/iters)
 X_ttl = np.empty((0, 31))
 y_ttl = np.empty((0, ))
 
-start_point = 20
+start_point = 0
 
 for i in list(range(start_point, iters)):
 
@@ -133,28 +134,35 @@ for i in list(range(start_point, iters)):
     gc.collect()
 
     X = df.drop(["is_attributed", "click_time"], axis=1).as_matrix()
-            X_ttl = np.empty((0, 31))
-            y_ttl = np.empty((0,))
+    X_ttl = np.empty((0, 31))
+    y_ttl = np.empty((0,))
 
-        print(X.shape)
+    print(X.shape)
+
+    if run == "train":
+        y = df['is_attributed'].values
+
+    X_ttl = np.vstack((X_ttl, X))
+    y_ttl = np.concatenate((y_ttl, y))
+
+    if (i + 1) % 10 == 0:
 
         if run == "train":
-            y = df['is_attributed'].values
 
-        X_ttl = np.vstack((X_ttl, X))
-        y_ttl = np.concatenate((y_ttl, y))
+            chdir(sparse_array_path) # Changing directory as sparse type doesn't want to work with absolute file paths
 
-        if (i + 1) % 10 == 0:
-
-            if run == "train":
-                file = sparse_array_path + "train_" + str(i + 1) + ".sparse"
-                funcs.from_sparse_to_file(file, X_ttl, deli1=" ", deli2=":", ytarget=y_ttl)
+            file = "train_" + str(i + 1) + ".csv"
+            funcs.from_sparse_to_file(file, X_ttl, deli1=" ", deli2=":", ytarget=y_ttl)
 
         else:
 
-            file = sparse_array_path + "test_" + str(i + 1) + ".sparse"
+            chdir(sparse_array_path)  # Changing directory as sparse type doesn't want to work with absolute file paths
+
+            file = "test_" + str(i + 1) + ".csv"
             funcs.from_sparse_to_file(file, X_ttl, deli1=" ", deli2=":", ytarget=None)
 
             X_ttl = np.empty((0, 31))
+
+
 
 
