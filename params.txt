@@ -1,0 +1,6 @@
+LogisticRegression Type:SGD C:0.00001 threads:1 learn_rate:0.1 usescale:True maxim_Iteration:20 seed:1 verbose:false
+LightgbmClassifier boosting:gbdt objective:binary metric:auc num_leaves:10 num_iterations:1000 learning_rate:0.01 threads:3
+LightgbmClassifier boosting:gbdt objective:binary metric:auc num_leaves:24 num_iterations:1000 learning_rate:0.03 threads:3
+LightgbmClassifier boosting:gbdt objective:binary metric:auc num_leaves:28 num_iterations:1000 learning_rate:0.03 threads:3 min_sum_hessian_in_leaf:0.1 max_depth:7 feature_fraction:0.6 min_data_in_leaf:70
+
+LightgbmClassifier boosting:gbdt objective:binary metric:auc num_leaves:10 num_iterations:1000 learning_rate:0.01 threads:3

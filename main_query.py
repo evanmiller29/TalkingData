@@ -10,7 +10,7 @@ sparse_array_path = 'F:/Nerdy Stuff/Kaggle/Talking data/sparse matricies/'
 
 predictors = []
 
-run = "train"
+run = "test"
 
 dtypes = {
         'ip'            : 'uint32',
@@ -30,7 +30,7 @@ if run == "train":
     print('loading %s data...' % (run))
     base_df = pd.read_csv(file, parse_dates=['click_time'], low_memory=True,dtype=dtypes, usecols=cols)
 
-else:
+if run == "test":
 
     print('loading %s data...' % (run))
 
@@ -133,7 +133,12 @@ for i in list(range(start_point, iters)):
     predictors, df = funcs.do_mean(predictors, df, ['ip', 'app', 'channel'], 'hour');
     gc.collect()
 
-    X = df.drop(["is_attributed", "click_time"], axis=1).as_matrix()
+    if run == "train":
+        X = df.drop(["is_attributed", "click_time"], axis=1).as_matrix()
+
+    if run == "test":
+        X = df.drop("click_time", axis=1).as_matrix()
+
     X_ttl = np.empty((0, 31))
     y_ttl = np.empty((0,))
 
@@ -151,14 +156,14 @@ for i in list(range(start_point, iters)):
 
             chdir(sparse_array_path) # Changing directory as sparse type doesn't want to work with absolute file paths
 
-            file = "train_" + str(i + 1) + ".csv"
+            file = "train_" + str(i + 1) + ".txt"
             funcs.from_sparse_to_file(file, X_ttl, deli1=" ", deli2=":", ytarget=y_ttl)
 
-        else:
+        if run == "test":
 
             chdir(sparse_array_path)  # Changing directory as sparse type doesn't want to work with absolute file paths
 
-            file = "test_" + str(i + 1) + ".csv"
+            file = "test_" + str(i + 1) + ".txt"
             funcs.from_sparse_to_file(file, X_ttl, deli1=" ", deli2=":", ytarget=None)
 
             X_ttl = np.empty((0, 31))
